@@ -1,8 +1,12 @@
 package com.aisearch;
 
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.Vector;
 import java.awt.geom.Ellipse2D;
-import java.awt.*;
 
 public class Nodo {
     // define un nuevo tipo anidado

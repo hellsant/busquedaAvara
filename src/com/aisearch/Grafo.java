@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Panel;
 import java.util.Vector;
-import java.util.LinkedList;
 
 public class Grafo extends Panel {
 
@@ -128,14 +127,14 @@ public class Grafo extends Panel {
             }
         }
         // construye la cadena
-        cadena[0] = "NOT GENERATED: " + Integer.toString(nogenerado)
-                + " <not visited nodes>";
-        cadena[1] = "OPENED: " + Integer.toString(abierto)
-                + " <visited and not expanded nodes>";
-        cadena[2] = "CLOSED: " + Integer.toString(cerrado)
-                + " <visited and expanded nodes>";
-        cadena[3] = "GENERATED: " + Integer.toString(abierto + cerrado)
-                + " <total visited nodes>";
+        cadena[0] = "No generado: " + Integer.toString(nogenerado)
+                + " <nodos no visibles>";
+        cadena[1] = "Abierto: " + Integer.toString(abierto)
+                + " <nodos visitados y no expandidos>";
+        cadena[2] = "Cerrado: " + Integer.toString(cerrado)
+                + " <nodos visitados y expandidos>";
+        cadena[3] = "Generando: " + Integer.toString(abierto + cerrado)
+                + " <nodos visitados en total>";
 
         return cadena;
     }
@@ -334,7 +333,7 @@ public class Grafo extends Panel {
             int itemp;
             Nodo ntemp;
             if (Step == 0) {
-                cadena = "OPENED={";
+                cadena = "ABIERTO={";
                 for (temp = 0; temp < abiertos.size(); temp++) {
                     cadena += abiertos.get(temp) + "(";
                     itemp = IndiceNodos.indexOf(abiertos.get(temp));
@@ -356,7 +355,7 @@ public class Grafo extends Panel {
             int temp;
             String cadena;
             if (Step == 0) {
-                cadena = "CLOSED={";
+                cadena = "CERRADO={";
                 for (temp = 0; temp < cerrados.size(); temp++) {
                     cadena += cerrados.get(temp);
                     if (temp < cerrados.size() - 1) {
@@ -395,7 +394,7 @@ public class Grafo extends Panel {
                 // retardo de un segundo
                 try {
                     Thread.sleep(Temporizador);
-                } catch (Exception e) {
+                } catch (InterruptedException e) {
                 }
             }
             Grafo.this.NodoObjetivo = miObjetivo;
@@ -443,7 +442,7 @@ public class Grafo extends Panel {
         }
 
         private void paso0() {
-            if (abiertos.size() != 0) {
+            if (!abiertos.isEmpty()) {
                 // extrae el primer nodo de la pila abiertos
                 n = IndiceNodos.indexOf(abiertos.remove(0));
                 nodo = ListaNodos.get(n);
@@ -474,30 +473,36 @@ public class Grafo extends Panel {
                 // obtiene el nodo sucesor
                 s = IndiceNodos.indexOf(nodo.getIdSucesor(j));
                 suc = ListaNodos.get(s);
-                if (suc.getEstado() == Nodo.TEstado.NOGENERADO) {
-                    // establece puntero a nodo si el sucesor no se ha generado
-                    suc.setIdPuntero(nodo.toString());
-                    suc.setCostePuntero(nodo.getCosteSucesor(j));
-                    suc.setCosteCamino(nodo.getCosteSucesor(j)
-                            + nodo.getCosteCamino());
-                    // inserta el elemento en la lista ABIERTOS
-                    suc.setEstado(Nodo.TEstado.ABIERTO);
-                    suc.pintarNodo(g);
-                    // inserta el sucesor en la lista de abiertos
-                    abiertos.add(suc.toString());
-                } else if ((suc.getEstado() == Nodo.TEstado.ABIERTO)) {
-                    // modifica el puntero del sucesor a nodo
-                    suc.setIdPuntero(nodo.toString());
-                    suc.setCostePuntero(nodo.getCosteSucesor(j));
-                    suc.setCosteCamino(nodo.getCosteSucesor(j)
-                            + nodo.getCosteCamino());
-                    suc.pintarNodo(g);
-                } else if ((suc.getEstado() == Nodo.TEstado.CERRADO)) {
-                    // no se que hacer
+                if (null != suc.getEstado()) switch (suc.getEstado()) {
+                    case NOGENERADO:
+                        // establece puntero a nodo si el sucesor no se ha generado
+                        suc.setIdPuntero(nodo.toString());
+                        suc.setCostePuntero(nodo.getCosteSucesor(j));
+                        suc.setCosteCamino(nodo.getCosteSucesor(j)
+                                + nodo.getCosteCamino());
+                        // inserta el elemento en la lista ABIERTOS
+                        suc.setEstado(Nodo.TEstado.ABIERTO);
+                        suc.pintarNodo(g);
+                        // inserta el sucesor en la lista de abiertos
+                        abiertos.add(suc.toString());
+                        break;
+                    case ABIERTO:
+                        // modifica el puntero del sucesor a nodo
+                        suc.setIdPuntero(nodo.toString());
+                        suc.setCostePuntero(nodo.getCosteSucesor(j));
+                        suc.setCosteCamino(nodo.getCosteSucesor(j)
+                                + nodo.getCosteCamino());
+                        suc.pintarNodo(g);
+                        break;
+                // no se que hacer
+                    case CERRADO:
+                        break;
+                    default:
+                        break;
                 }
                 j++;
             } else {
-                if (abiertos.size() != 0) {
+                if (!abiertos.isEmpty()) {
                     // pinta el nodo
                     nodo.setEstado(Nodo.TEstado.CERRADO);
                     nodo.pintarNodo(g);
@@ -547,7 +552,6 @@ public class Grafo extends Panel {
             }
         }
     }
-   
 
     // METODOS PARA PINTAR FLECHAS
     int al = 10; // Arrow length

@@ -1,10 +1,35 @@
 package com.aisearch;
 
+import java.awt.BorderLayout;
+import java.awt.CheckboxMenuItem;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FileDialog;
+import java.awt.FlowLayout;
+import java.awt.Frame;
+import java.awt.GridLayout;
+import java.awt.HeadlessException;
+import java.awt.Label;
+import java.awt.Menu;
+import java.awt.MenuBar;
+import java.awt.MenuItem;
+import java.awt.TextArea;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.Date;
-import java.awt.event.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
-public class AISearch extends Frame {
+public class AISearch extends JFrame {
 
     private static final long serialVersionUID = 1L;
 
@@ -17,11 +42,11 @@ public class AISearch extends Frame {
     CheckboxMenuItem CMITemporizador, CMIPaso, CMILeyenda;
     CheckboxMenuItem CMIMuyRapido, CMIRapido, CMIMedio, CMILento;
     Choice CBusqueda;
-    Button BEjecutar, BReiniciar;
+    JButton BEjecutar, BReiniciar;
     TextArea TAInformacion;
-    Panel PNorte, PSur;
+    JPanel PNorte, PSur;
     FileDialog FDAbrir;
-    Dialog DAcerca;
+    JDialog DAcerca;
 
     String ArchivoGrafo;
     private final Grafo grafo;
@@ -48,9 +73,108 @@ public class AISearch extends Frame {
             }
         });
 
+        pantallaMenu();
+
+        abrirArchivo();
+
+        ventanadeinfirmacion();
+
+        seleccionBusqueda();
+
+        ejecucion();
+
+        // area de texto
+        TAInformacion = new TextArea("", 5, 70, TextArea.SCROLLBARS_VERTICAL_ONLY);
+        TAInformacion.setEditable(false);
+        TAInformacion.setBackground(Color.white);
+
+        // paneles contenedores
+        PNorte = new JPanel();
+        PNorte.setLayout(new FlowLayout(FlowLayout.LEFT));
+        PNorte.setBackground(Color.lightGray);
+        PNorte.add(CBusqueda);
+        PNorte.add(BEjecutar);
+        PNorte.add(BReiniciar);
+        PSur = new JPanel();
+        PSur.setLayout(new BorderLayout());
+        PSur.setBackground(Color.lightGray);
+        PSur.add("North", new Label("Panel de Mensajes"));
+        PSur.add("Center", TAInformacion);
+
+        // componente grafo extiende de panel
+        grafo = new Grafo();
+        grafo.setBackground(new Color(90, 138, 212));
+        // incorpora componentes a la venta principal
+        this.setMenuBar(MMenu);
+        this.add("North", PNorte);
+        this.add("Center", grafo);
+        this.add("South", PSur);
+
+        // muestra la ventana principal
+        this.setVisible(true);
+    }
+
+    private void ejecucion() {
+        // botones
+        BEjecutar = new JButton(" sigiente paso ");
+        BReiniciar = new JButton("reset busqueda");
+        BEjecutar.setEnabled(false);
+        BReiniciar.setEnabled(false);
+        BEjecutar.addActionListener(new ControladorButton(BEjecutar));
+        BReiniciar.addActionListener(new ControladorButton(BReiniciar));
+    }
+
+    private void seleccionBusqueda() throws HeadlessException {
+        // lista de seleccion
+        CBusqueda = new Choice();
+        CBusqueda.addItem("Avara");
+        CBusqueda.addItemListener(new ControladorChoice(CBusqueda));
+        CBusqueda.setEnabled(false);
+    }
+
+    private void ventanadeinfirmacion() throws HeadlessException {
+        // ventana de acerca
+        DAcerca = new JDialog(this, "infiormacion");
+        DAcerca.setLayout(new GridLayout(12, 1));
+        pantalla = Toolkit.getDefaultToolkit().getScreenSize();
+        ancho = 400;
+        alto = 250;
+        x = (pantalla.width - ancho) / 2;
+        y = (pantalla.height - alto) / 2;
+        DAcerca.setBounds(x, y, ancho, alto);
+        DAcerca.setResizable(false);
+        DAcerca.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                DAcerca.setVisible(false);
+            }
+        });
+        
+        // incorpora los elementos al dialog
+        DAcerca.add(new JLabel(""));
+        DAcerca.add(new JLabel(""));
+        DAcerca.add(new JLabel("proyecto de busqueda avara "));
+        DAcerca.add(new JLabel(" UMSS"));
+        DAcerca.add(new JLabel(" Inteligencia Artificial "));
+        DAcerca.add(new JLabel(" 1-2018"));
+        DAcerca.add(new JLabel("como recorrer la ciudad de una iglesia a otra"));
+        DAcerca.add(new JLabel("o como tambien llegar de un punto a la iglesia"));
+        DAcerca.add(new JLabel(""));
+    }
+
+    private void abrirArchivo() {
+        // ventana de abrir archivos
+        FDAbrir = new FileDialog(this, "abrir archivo del grafico", FileDialog.LOAD);
+        ArchivoGrafo = "";
+    }
+
+    private void pantallaMenu() throws HeadlessException {
         // menu de la ventana principal
         MMenu = new MenuBar();
-        Menu marchivo = new Menu("Archivo"), mver = new Menu("Vista"), mejecucion = new Menu("Ejecutar"), macerca = new Menu("Ayuda");
+        Menu marchivo = new Menu("Archivo");
+        Menu mver = new Menu("Vista");
+        Menu mejecucion = new Menu("Ejecutar");
+        Menu macerca = new Menu("Ayuda");
         MTemporizador = new Menu("Temporisador");
         MAbrir = new MenuItem("Abrir");
         MSalir = new MenuItem("Salir");
@@ -101,81 +225,6 @@ public class AISearch extends Frame {
         CMIRapido.addItemListener(new ControladorCheckBox(CMIRapido));
         CMIMedio.addItemListener(new ControladorCheckBox(CMIMedio));
         CMILento.addItemListener(new ControladorCheckBox(CMILento));
-
-        // ventana de abrir archivos
-        FDAbrir = new FileDialog(this, "abrir archivo del grafico", FileDialog.LOAD);
-        ArchivoGrafo = "";
-
-        // ventana de acerca
-        DAcerca = new Dialog(this, "infiormacion");
-        DAcerca.setLayout(new GridLayout(12, 1));
-        pantalla = Toolkit.getDefaultToolkit().getScreenSize();
-        ancho = 400;
-        alto = 250;
-        x = (pantalla.width - ancho) / 2;
-        y = (pantalla.height - alto) / 2;
-        DAcerca.setBounds(x, y, ancho, alto);
-        DAcerca.setResizable(false);
-        DAcerca.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {
-                DAcerca.setVisible(false);
-            }
-        });
-
-        // incorpora los elementos al dialog
-        DAcerca.add(new Label(""));
-        DAcerca.add(new Label(""));
-        DAcerca.add(new Label("proyecto de busqueda avara "));
-        DAcerca.add(new Label(" UMSS"));
-        DAcerca.add(new Label(" Inteligencia Artificial "));
-        DAcerca.add(new Label(" 1-2018"));
-        DAcerca.add(new Label("como recorrer la ciudad de una iglesia a otra"));
-        DAcerca.add(new Label("o como tambien llegar de un punto a la iglesia"));
-        DAcerca.add(new Label(""));
-
-        // lista de seleccion
-        CBusqueda = new Choice();
-        CBusqueda.addItem("Avara");
-        CBusqueda.addItemListener(new ControladorChoice(CBusqueda));
-        CBusqueda.setEnabled(false);
-
-        // botones
-        BEjecutar = new Button(" sigiente paso ");
-        BReiniciar = new Button("reset busqueda");
-        BEjecutar.setEnabled(false);
-        BReiniciar.setEnabled(false);
-        BEjecutar.addActionListener(new ControladorButton(BEjecutar));
-        BReiniciar.addActionListener(new ControladorButton(BReiniciar));
-
-        // area de texto
-        TAInformacion = new TextArea("", 5, 70, TextArea.SCROLLBARS_VERTICAL_ONLY);
-        TAInformacion.setEditable(false);
-        TAInformacion.setBackground(Color.white);
-
-        // paneles contenedores
-        PNorte = new Panel();
-        PNorte.setLayout(new FlowLayout(FlowLayout.LEFT));
-        PNorte.setBackground(Color.lightGray);
-        PNorte.add(CBusqueda);
-        PNorte.add(BEjecutar);
-        PNorte.add(BReiniciar);
-        PSur = new Panel();
-        PSur.setLayout(new BorderLayout());
-        PSur.setBackground(Color.lightGray);
-        PSur.add("North", new Label("Panel de Mensajes"));
-        PSur.add("Center", TAInformacion);
-
-        // componente grafo extiende de panel
-        grafo = new Grafo();
-        grafo.setBackground(new Color(90, 138, 212));
-        // incorpora componentes a la venta principal
-        this.setMenuBar(MMenu);
-        this.add("North", PNorte);
-        this.add("Center", grafo);
-        this.add("South", PSur);
-
-        // muestra la ventana principal
-        this.setVisible(true);
     }
 
     // clases para controlar eventos
@@ -308,9 +357,9 @@ public class AISearch extends Frame {
 
     class ControladorButton implements ActionListener {
 
-        Button b;
+        JButton b;
 
-        ControladorButton(Button bp) {
+        ControladorButton(JButton bp) {
             b = bp;
         }
 
@@ -323,11 +372,11 @@ public class AISearch extends Frame {
                     case 0:
                         if (CMIPaso.getState()) {
                             cadena = avara.getAbierta();
-                            if (cadena != "") {
+                            if (!"".equals(cadena)) {
                                 TAInformacion.append((new Date()).toString() + ": " + cadena + "\n");
                             }
                             cadena = avara.getCerrada();
-                            if (cadena != "") {
+                            if (!"".equals(cadena)) {
                                 TAInformacion.append((new Date()).toString() + ": " + cadena + "\n");
                             }
                             if (!avara.step()) {
